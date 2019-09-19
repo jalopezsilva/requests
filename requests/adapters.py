@@ -344,13 +344,16 @@ class HTTPAdapter(BaseAdapter):
         scheme = urlparse(request.url).scheme
 
         is_proxied_http_request = (proxy and scheme != 'https')
+
+        is_using_https_proxy = False
         using_socks_proxy = False
         if proxy:
             proxy_scheme = urlparse(proxy).scheme.lower()
             using_socks_proxy = proxy_scheme.startswith('socks')
+            is_using_https_proxy = proxy_scheme.startswith('https')
 
         url = request.path_url
-        if is_proxied_http_request and not using_socks_proxy:
+        if is_proxied_http_request and not using_socks_proxy or is_using_https_proxy:
             url = urldefragauth(request.url)
 
         return url
