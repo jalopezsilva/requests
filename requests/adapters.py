@@ -310,6 +310,11 @@ class HTTPAdapter(BaseAdapter):
             if not proxy_url.host:
                 raise InvalidProxyURL("Please check proxy URL. It is malformed"
                                       " and could be missing the host.")
+
+            if proxy_url.scheme.startswith(f'https'):
+                if 'use_forwarding_for_https' not in proxies_kwargs:
+                    proxies_kwargs['use_forwarding_for_https'] = True
+
             proxy_manager = self.proxy_manager_for(proxy, **proxies_kwargs)
             conn = proxy_manager.connection_from_url(url)
         else:
@@ -349,7 +354,7 @@ class HTTPAdapter(BaseAdapter):
 
         is_proxied_http_request = (proxy and scheme != 'https')
         is_using_https_forwarding = (
-            proxies_kwargs and proxies_kwargs.get('use_forwarding_for_https', False)
+            proxies_kwargs and proxies_kwargs.get('use_forwarding_for_https', True)
         )
 
         is_using_https_proxy = False
@@ -358,6 +363,10 @@ class HTTPAdapter(BaseAdapter):
             proxy_scheme = urlparse(proxy).scheme.lower()
             using_socks_proxy = proxy_scheme.startswith('socks')
             is_using_https_proxy = proxy_scheme.startswith('https')
+
+        # TODO(jls) remove once upstreamed.
+        if is_using_https_proxy:
+            is_using_https_forwarding = True
 
         url = request.path_url
         if (is_proxied_http_request and not using_socks_proxy or

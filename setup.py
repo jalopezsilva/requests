@@ -45,8 +45,8 @@ requires = [
     'chardet>=3.0.2,<4',
     'idna>=2.5,<3',
     'urllib3>=1.21.1,<1.27',
-    'certifi>=2017.4.17'
-
+    'certifi>=2017.4.17',
+    'packaging'
 ]
 test_requirements = [
     'pytest-httpbin==0.0.7',
