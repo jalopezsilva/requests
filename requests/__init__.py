@@ -43,12 +43,14 @@ is at <https://requests.readthedocs.io>.
 import urllib3
 import chardet
 import warnings
+from packaging.version import parse
 from .exceptions import RequestsDependencyWarning
 
 
 def check_compatibility(urllib3_version, chardet_version):
-    urllib3_version = urllib3_version.split('.')
-    assert urllib3_version != ['dev']  # Verify urllib3 isn't installed from git.
+    assert urllib3_version != 'dev'  # Verify urllib3 isn't installed from git.
+    complete_version = parse(urllib3_version)
+    urllib3_version = complete_version.release
 
     # Sometimes, urllib3 only reports its version as 16.1.
     if len(urllib3_version) == 2:
@@ -63,7 +65,7 @@ def check_compatibility(urllib3_version, chardet_version):
     assert minor <= 25
 
     # Check chardet for compatibility.
-    major, minor, patch = chardet_version.split('.')[:3]
+    major, minor, patch = parse(chardet_version).release
     major, minor, patch = int(major), int(minor), int(patch)
     # chardet >= 3.0.2, < 3.1.0
     assert major == 3

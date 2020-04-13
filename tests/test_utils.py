@@ -8,7 +8,7 @@ import zipfile
 from collections import deque
 
 import pytest
-from requests import compat
+from requests import compat, check_compatibility
 from requests.cookies import RequestsCookieJar
 from requests.structures import CaseInsensitiveDict
 from requests.utils import (
@@ -25,7 +25,6 @@ from requests.utils import (
 from requests._internal_utils import unicode_is_ascii
 
 from .compat import StringIO, cStringIO
-
 
 class TestSuperLen:
 
@@ -781,3 +780,14 @@ def test_set_environ_raises_exception():
             raise Exception('Expected exception')
 
     assert 'Expected exception' in str(exception.value)
+
+class TestCompatCheck:
+    def test_urllib3_compatibility(self):
+        check_compatibility('1.25.8', '3.0.2')
+        check_compatibility('1.25.8+local1', '3.0.2')
+
+        with pytest.raises(AssertionError):
+            check_compatibility('0.0.0', '3.0.2')
+
+        with pytest.raises(AssertionError):
+            check_compatibility('dev', '3.0.2')
