@@ -289,6 +289,24 @@ class HTTPAdapter(BaseAdapter):
 
         return response
 
+    def get_proxy_kwargs(self, proxy):
+        """
+        Returns a dictionary with any proxy kwargs that should be passed to
+        urllib3.
+
+        For now this methods helps us default to 'use_forwarding_for_https'.
+        Once all changes have been completed.
+        """
+
+        proxy_kwargs = {}
+        is_using_https_proxy = proxy.scheme.startswith('https')
+
+        if is_using_https_proxy:
+            proxy_kwargs['use_forwarding_for_https'] = True
+
+        return proxy_kwargs
+
+
     def get_connection(self, url, proxies=None):
         """Returns a urllib3 connection for the given URL. This should not be
         called from user code, and is only exposed for use when subclassing the
@@ -306,7 +324,8 @@ class HTTPAdapter(BaseAdapter):
             if not proxy_url.host:
                 raise InvalidProxyURL("Please check proxy URL. It is malformed"
                                       " and could be missing the host.")
-            proxy_manager = self.proxy_manager_for(proxy)
+            proxy_kwargs = self.get_proxy_kwargs(proxy_url)
+            proxy_manager = self.proxy_manager_for(proxy, **proxy_kwargs)
             conn = proxy_manager.connection_from_url(url)
         else:
             # Only scheme should be lower case
